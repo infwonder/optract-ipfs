@@ -1,0 +1,30 @@
+#!/bin/sh
+
+OD=`pwd`;
+
+function launch() {
+	sleep $1;
+	[ -e ${OD}/ipfs_repo/api ] && [ -e ${OD}/ipfs_repo/repo.lock ] && return 0 || launch $1;
+}
+
+function ipfs_ping() {
+	while true; do
+		sleep $1;
+		ipfs_list=${OD}/ipfs_default.list
+		[ -e ${OD}/ipfs.list ] && ipfs_list=${OD}/ipfs.list
+
+		for i in `cat ${ipfs_list}`; do
+			echo "pinging ipfs node ${i} ...";
+			ipfs ping -n 3 ${i};
+		done
+	done
+}
+
+(
+  export IPFS_PATH="${OD}/ipfs_repo";
+  [ -e ${OD}/ipfs_repo/config ] && echo "ipfs repo ready" || ipfs init && \
+  rm -f ${OD}/ipfs_repo/api ${OD}/ipfs_repo/repo.lock && ipfs daemon --routing=dhtclient &
+)
+
+launch 0.01 && ipfs_ping 42 && pkill -15 ipfs || pkill -15 ipfs;
+exit 0;
