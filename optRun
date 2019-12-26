@@ -11,7 +11,7 @@ function ipfs_ping() {
 	while true; do
 		sleep $1;
 		ipfs_list=${OD}/ipfs_default.list
-		[ -e ${OD}/ipfs.list ] && ipfs_list=${OD}/ipfs.list
+		[ -e ${OD}/config/ipfs.list ] && ipfs_list=${OD}/config/ipfs.list
 
 		for i in `cat ${ipfs_list}`; do
 			echo "pinging ipfs node ${i} ...";
@@ -23,6 +23,8 @@ function ipfs_ping() {
 (
   export IPFS_PATH="${OD}/ipfs_repo";
   [ -e ${OD}/ipfs_repo/config ] && echo "ipfs repo ready" || ipfs init && \
+  ipfs config Addresses.API "/ip4/0.0.0.0/tcp/5001" && \
+  ipfs config Addresses.Gateway "/ip4/0.0.0.0/tcp/8080" && \
   rm -f ${OD}/ipfs_repo/api ${OD}/ipfs_repo/repo.lock && ipfs daemon --routing=dhtclient &
 )
 
